@@ -1,26 +1,58 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+import CardList from "./components/CardList";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import SearchBox from "./components/SearchBox";
+import Scroll from "./components/Scroll";
+
+import ErrorBoundry from "./components/ErrorBoundry";
+
+class App extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      users: [],
+      search: ""
+    };
+  }
+
+  componentDidMount() {
+    fetch("https://jsonplaceholder.typicode.com/users/")
+      .then(res => res.json())
+      .then(data =>
+        this.setState({
+          users: data
+        })
+      );
+  }
+
+  onSearchChange = e => {
+    this.setState({ search: e.target.value });
+  };
+
+  render() {
+    const filteredUsers = this.state.users.filter(user => {
+      return user.name.toLowerCase().includes(this.state.search.toLowerCase());
+    });
+
+    if (!this.state.users.length) {
+      return <h1 className="loadingBar">Loading</h1>;
+    } else {
+      return (
+        <div className="App">
+          <header className="pa-4">
+            <h1>Users List</h1>
+            <SearchBox searchChange={this.onSearchChange} />
+          </header>
+          <Scroll>
+            <ErrorBoundry>
+              <CardList users={filteredUsers} />
+            </ErrorBoundry>
+          </Scroll>
+        </div>
+      );
+    }
+  }
 }
 
 export default App;
